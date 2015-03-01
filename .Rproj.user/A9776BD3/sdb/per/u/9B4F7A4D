@@ -1,0 +1,17 @@
+{
+    "contents" : "rm(list=ls(all=TRUE))\n\npeixe<-read.table(\"C:/Users/Nick/Desktop/format.txt\", header=TRUE)\nhead(peixe)\n\nlibrary(tidyr)\nlibrary(dplyr)\n\nsalvar<-peixe %>%\n  gather(especie, abd, Acestrorhynchus.falcatus.:Taeniacara.candidi.)\nhead(salvar)\nsetwd(\"C:/Users/Nick/Desktop\")\nwrite.table(salvar, \"peixe.xls\", sep=\"\\t\")\n",
+    "created" : 1425159710543.000,
+    "dirty" : true,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "504942493",
+    "id" : "9B4F7A4D",
+    "lastKnownWriteTime" : 132198912,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}
