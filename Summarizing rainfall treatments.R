@@ -1,3 +1,4 @@
+#by Nicholas Marino
 # what does the rainfall distribution mean? -------------------------------
 
 #rainfall is the data frame I am working on
