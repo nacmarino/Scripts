@@ -1,8 +1,14 @@
-#this function calculates the dissimilarity between pairs of sites, but taking into account differences
-#in species richness in each comparison
-#in order to improve the estimate of the rarefied dissimilarity, this rarefaction should be run for a 
-#number of times, from which we take the average dissimilarity between pairs of communities after
-#.reps runs
+# R function wrote and developed by Nicholas Marino
+
+# this function takes a while (sometimes a lot of time) to return the final dissimilarity matrix
+# at the present time, this function is not intended to be elegant, but functional
+# I'd be happy with any contribution to improve its functionallity and speed
+
+# this function calculates the dissimilarity between pairs of sites, but taking into account differences
+# in species richness in each comparison
+# in order to improve the estimate of the rarefied dissimilarity, this rarefaction should be run for a 
+# number of times, from which we take the average dissimilarity between pairs of communities after
+# .reps runs
 beta.rich <- function(.dados, .reps){
   reps <- .reps
   #create an empty data frame where you are going to store each pairwise dissimilarity value for each run
