@@ -32,11 +32,11 @@ make_corrweight_var <- function(x, std_dev, sample_size){
 
 
 
-factorial_RR <- function(x_Bminus = dados$mean_B_minus.A_minus, sd_Bminus = dados$error_B_minus.A_minus, n_Bminus = dados$n_B_minus.A_minus, 
-                            x_Bminus_Aplus = dados$mean_B_minus.A_plus, sd_Bminus_Aplus = dados$error_B_minus.A_plus, n_Bminus_Aplus = dados$n_B_minus.A_plus,
-                            x_Bplus = dados$mean_B_plus.A_minus, sd_Bplus = dados$error_B_plus.A_minus, n_Bplus = dados$n_B_plus.A_minus, 
-                            x_Bplus_Aplus = dados$mean_B_plus.A_plus, sd_Bplus_Aplus = dados$error_B_plus.A_plus, n_Bplus_Aplus = dados$n_B_plus.A_plus, 
-                            ID_column = dados$par_id) { 
+factorial_RR <- function(x_Bminus = mean_B_minus.A_minus, sd_Bminus = error_B_minus.A_minus, n_Bminus = n_B_minus.A_minus, 
+                            x_Bminus_Aplus = mean_B_minus.A_plus, sd_Bminus_Aplus = error_B_minus.A_plus, n_Bminus_Aplus = n_B_minus.A_plus,
+                            x_Bplus = mean_B_plus.A_minus, sd_Bplus = error_B_plus.A_minus, n_Bplus = n_B_plus.A_minus, 
+                            x_Bplus_Aplus = mean_B_plus.A_plus, sd_Bplus_Aplus = error_B_plus.A_plus, n_Bplus_Aplus = n_B_plus.A_plus, 
+                            ID_column = par_id) { 
   
   
   
