@@ -4,73 +4,73 @@
 
 
 # this function is used to calculate the correction factor for small sample bias from
-# simple treatment and control differences
-small_bias <- function(n_treatment, n_control) {
-  1 - (3/((4*(n_control + n_treatment - 2)) - 1))
+# simple Aplus and control differences
+small_bias <- function(n_Aplus, n_control) {
+  1 - (3/((4*(n_control + n_Aplus - 2)) - 1))
 }
 
 
 # this function is used to calculate the correction factor for small sample bias from
-# the interaction of the four treatments
-small_bias_interaction <- function(n_treatment.natural, n_control.natural, n_treatment.altered, n_control.altered) {
-  1 - (3/((4*(n_treatment.natural + n_control.natural + n_treatment.altered + n_control.altered - 4)) - 1))
+# the interaction of the four Apluss
+small_bias_interaction <- function(n_Aplus.Bminus, n_control.Bminus, n_Aplus.Bplus, n_control.Bplus) {
+  1 - (3/((4*(n_Aplus.Bminus + n_control.Bminus + n_Aplus.Bplus + n_control.Bplus - 4)) - 1))
 }
 
 
-# this function calculates the weighted variance for each treatment
+# this function calculates the weighted variance for each Aplus
 wgh_variance <- function(sample_size, std_deviation) {
   (sample_size - 1) * (std_deviation^2)
 }
 
 
-factorial_hedge <- function(x_natural = dados$mean_nopred_Controle, sd_natural = dados$error_nopred_Controle, n_natural = dados$n_nopred_Controle, 
-                    x_natural_treatment = dados$mean_pred_Controle, sd_natural_treatment = dados$error_pred_Controle, n_natural_treatment = dados$n_pred_Controle,
-                    x_altered = dados$mean_nopred_Tratamento, sd_altered = dados$error_nopred_Tratamento, n_altered = dados$n_nopred_Tratamento, 
-                    x_altered_treatment = dados$mean_pred_Tratamento, sd_altered_treatment = dados$error_pred_Tratamento, n_altered_treatment = dados$n_pred_Tratamento, 
-                    ID_column = dados$par_id) { 
+factorial_hedge <- function(x_Bminus = mean_Bminus_Aminus, sd_Bminus = error_Bminus_Aminus, n_Bminus = n_Bminus_Aminus, 
+                    x_Bminus_Aplus = mean_Bminus_Aplus, sd_Bminus_Aplus = error_Bminus_Aplus, n_Bminus_Aplus = n_Bminus_Aplus,
+                    x_Bplus = mean_Bplus_Aminus, sd_Bplus = error_Bplus_Aminus, n_Bplus = n_Bplus_Aminus, 
+                    x_Bplus_Aplus = mean_Bplus_Aplus, sd_Bplus_Aplus = error_Bplus_Aplus, n_Bplus_Aplus = n_Bplus_Aplus, 
+                    ID_column = par_id) { 
   
 
   
   # pooled sample variance of the hedge's d effect size metric for all factors
-  sample_variance <- sqrt((wgh_variance(n_natural, sd_natural) + wgh_variance(n_natural_treatment, sd_natural_treatment) +
-      wgh_variance(n_altered, sd_altered) + wgh_variance(n_altered_treatment, sd_altered_treatment))/
-    (n_natural + n_natural_treatment + n_altered + n_altered_treatment - 4))
+  sample_variance <- sqrt((wgh_variance(n_Bminus, sd_Bminus) + wgh_variance(n_Bminus_Aplus, sd_Bminus_Aplus) +
+      wgh_variance(n_Bplus, sd_Bplus) + wgh_variance(n_Bplus_Aplus, sd_Bplus_Aplus))/
+    (n_Bminus + n_Bminus_Aplus + n_Bplus + n_Bplus_Aplus - 4))
   
   
   
   # calculations of the hedge's d effect size
-  # hedge's d for the treatment under natural conditions
-  d_treat.natural <- ((x_natural_treatment - x_natural)/sample_variance) * small_bias(n_natural, n_natural_treatment)
+  # hedge's d for the Aplus under Bminus conditions
+  d_Aplus.Bminus <- ((x_Bminus_Aplus - x_Bminus)/sample_variance) * small_bias(n_Bminus, n_Bminus_Aplus)
   
-  # hedge's d for the treatment under altered conditions
-  d_treat.altered <- ((x_altered_treatment - x_altered)/sample_variance) * small_bias(n_altered, n_altered_treatment)
+  # hedge's d for the Aplus under Bplus conditions
+  d_Aplus.Bplus <- ((x_Bplus_Aplus - x_Bplus)/sample_variance) * small_bias(n_Bplus, n_Bplus_Aplus)
   
   # this object is the sampling variance of adding a predator under the ambient condtion
-  d_var_treat.natural <- (1/n_natural) + (1/n_natural_treatment) + ((d_treat.natural^2)/(2*(n_natural_treatment + n_natural)))
+  d_var_Aplus.Bminus <- (1/n_Bminus) + (1/n_Bminus_Aplus) + ((d_Aplus.Bminus^2)/(2*(n_Bminus_Aplus + n_Bminus)))
   
   # this object is the sampling variance of adding a predator under the climate change condition
-  d_var_treat.altered <- (1/n_altered) + (1/n_altered_treatment) + ((d_treat.altered^2)/(2*(n_altered_treatment + n_altered)))
+  d_var_Aplus.Bplus <- (1/n_Bplus) + (1/n_Bplus_Aplus) + ((d_Aplus.Bplus^2)/(2*(n_Bplus_Aplus + n_Bplus)))
   
-  # sample size treatment, natural
-  size_n_treat.natural <- mean(c(n_natural, n_natural_treatment))
+  # sample size Aplus, Bminus
+  size_n_Aplus.Bminus <- mean(c(n_Bminus, n_Bminus_Aplus))
   
-  # sample size treatment, altered
-  size_n_treat.altered <- mean(c(n_altered, n_altered_treatment))
+  # sample size Aplus, Bplus
+  size_n_Aplus.Bplus <- mean(c(n_Bplus, n_Bplus_Aplus))
   
   
   
   # calculation for the overall effect of each factor in the experiment
-  # effect size of the pure effect of the treatment
-  d_treatment <- (((x_natural_treatment + x_altered_treatment) - (x_natural + x_altered))/(2*sample_variance)) * small_bias_interaction(n_natural, n_natural_treatment, n_altered, n_altered_treatment)
+  # effect size of the pure effect of the Aplus
+  d_Aplus <- (((x_Bminus_Aplus + x_Bplus_Aplus) - (x_Bminus + x_Bplus))/(2*sample_variance)) * small_bias_interaction(n_Bminus, n_Bminus_Aplus, n_Bplus, n_Bplus_Aplus)
   
-  # effect size of the pure effect of the altered condition
-  d_altered <- (((x_altered_treatment + x_altered) - (x_natural_treatment + x_natural))/(2*sample_variance)) * small_bias_interaction(n_natural, n_natural_treatment, n_altered, n_altered_treatment)
+  # effect size of the pure effect of the Bplus condition
+  d_Bplus <- (((x_Bplus_Aplus + x_Bplus) - (x_Bminus_Aplus + x_Bminus))/(2*sample_variance)) * small_bias_interaction(n_Bminus, n_Bminus_Aplus, n_Bplus, n_Bplus_Aplus)
   
-  # variance of the pure effect of the treatment
-  d_var_treatment <- ((1/n_altered) + (1/n_altered_treatment) + (1/n_natural) + (1/n_natural_treatment) + ((d_treatment^2)/(2*(n_altered + n_altered_treatment + n_natural + n_natural_treatment))))*(1/4)
+  # variance of the pure effect of the Aplus
+  d_var_Aplus <- ((1/n_Bplus) + (1/n_Bplus_Aplus) + (1/n_Bminus) + (1/n_Bminus_Aplus) + ((d_Aplus^2)/(2*(n_Bplus + n_Bplus_Aplus + n_Bminus + n_Bminus_Aplus))))*(1/4)
   
-  # variance of the pure effect of the altered condition
-  d_var_altered <- ((1/n_altered) + (1/n_altered_treatment) + (1/n_natural) + (1/n_natural_treatment) + ((d_altered^2)/(2*(n_altered + n_altered_treatment + n_natural + n_natural_treatment))))*(1/4)
+  # variance of the pure effect of the Bplus condition
+  d_var_Bplus <- ((1/n_Bplus) + (1/n_Bplus_Aplus) + (1/n_Bminus) + (1/n_Bminus_Aplus) + ((d_Bplus^2)/(2*(n_Bplus + n_Bplus_Aplus + n_Bminus + n_Bminus_Aplus))))*(1/4)
   
   
   
@@ -80,13 +80,13 @@ factorial_hedge <- function(x_natural = dados$mean_nopred_Controle, sd_natural =
   
   # calculation for the effect size of the interaction according to hedge's d
   # this object is the result of adding a predator under climate change
-  d_interaction <- ((d_treat.altered - d_treat.natural)/sample_variance) * small_bias_interaction(n_natural, n_natural_treatment, n_altered, n_altered_treatment)
+  d_interaction <- ((d_Aplus.Bplus - d_Aplus.Bminus)/sample_variance) * small_bias_interaction(n_Bminus, n_Bminus_Aplus, n_Bplus, n_Bplus_Aplus)
   
   # this object is the sampling variance of the interaction
-  d_var_interaction<- (1/n_altered) + (1/n_altered_treatment) + (1/n_natural) + (1/n_natural_treatment) + ((d_interaction^2)/(2*(n_altered + n_altered_treatment + n_natural + n_natural_treatment)))
+  d_var_interaction<- (1/n_Bplus) + (1/n_Bplus_Aplus) + (1/n_Bminus) + (1/n_Bminus_Aplus) + ((d_interaction^2)/(2*(n_Bplus + n_Bplus_Aplus + n_Bminus + n_Bminus_Aplus)))
   
   # sample size for interaction
-  sample_size <- mean(c(n_natural, n_natural_treatment, n_altered, n_altered_treatment))
+  sample_size <- mean(c(n_Bminus, n_Bminus_Aplus, n_Bplus, n_Bplus_Aplus))
   
   
   
@@ -94,10 +94,10 @@ factorial_hedge <- function(x_natural = dados$mean_nopred_Controle, sd_natural =
   
   # output
   data.frame(par_id = ID_column, sample_variance, sample_size, 
-             d_treat.natural, d_var_treat.natural, size_n_treat.natural,
-             d_treat.altered, d_var_treat.altered, size_n_treat.altered, 
-             d_treatment, d_var_treatment, 
-             d_altered, d_var_altered, 
+             d_Aplus.Bminus, d_var_Aplus.Bminus, size_n_Aplus.Bminus,
+             d_Aplus.Bplus, d_var_Aplus.Bplus, size_n_Aplus.Bplus, 
+             d_Aplus, d_var_Aplus, 
+             d_Bplus, d_var_Bplus, 
              d_interaction, d_var_interaction)
 
 }
