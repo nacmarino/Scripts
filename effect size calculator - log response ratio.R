@@ -32,10 +32,10 @@ make_corrweight_var <- function(x, std_dev, sample_size){
 
 
 
-factorial_RR <- function(x_amb = dados$mean_nopred_Controle, sd_amb = dados$error_nopred_Controle, n_amb = dados$n_nopred_Controle, 
-                            x_amb_pred = dados$mean_pred_Controle, sd_amb_pred = dados$error_pred_Controle, n_amb_pred = dados$n_pred_Controle,
-                            x_clim = dados$mean_nopred_Tratamento, sd_clim = dados$error_nopred_Tratamento, n_clim = dados$n_nopred_Tratamento, 
-                            x_clim_pred = dados$mean_pred_Tratamento, sd_clim_pred = dados$error_pred_Tratamento, n_clim_pred = dados$n_pred_Tratamento, 
+factorial_RR <- function(x_Bminus = dados$mean_B_minus.A_minus, sd_Bminus = dados$error_B_minus.A_minus, n_Bminus = dados$n_B_minus.A_minus, 
+                            x_Bminus_Aplus = dados$mean_B_minus.A_plus, sd_Bminus_Aplus = dados$error_B_minus.A_plus, n_Bminus_Aplus = dados$n_B_minus.A_plus,
+                            x_Bplus = dados$mean_B_plus.A_minus, sd_Bplus = dados$error_B_plus.A_minus, n_Bplus = dados$n_B_plus.A_minus, 
+                            x_Bplus_Aplus = dados$mean_B_plus.A_plus, sd_Bplus_Aplus = dados$error_B_plus.A_plus, n_Bplus_Aplus = dados$n_B_plus.A_plus, 
                             ID_column = dados$par_id) { 
   
   
@@ -43,16 +43,16 @@ factorial_RR <- function(x_amb = dados$mean_nopred_Controle, sd_amb = dados$erro
   # objects that will not go into the output of the function, but are middle steps to calculate other things
   # starts here
   # weighted variance for each factor of the factorial meta-analysis
-  wghvar_treat.natural <- make_weight_var(x_amb_pred, sd_amb_pred, n_amb_pred)
-  wghvar_cont.natural <- make_weight_var(x_amb, sd_amb, n_amb)
-  wghvar_treat.altered <- make_weight_var(x_clim_pred, sd_clim_pred, n_clim_pred)
-  wghvar_cont.altered <- make_weight_var(x_clim, sd_clim, n_clim)
+  wghvar_Bminus.Aplus <- make_weight_var(x_Bminus_Aplus, sd_Bminus_Aplus, n_Bminus_Aplus)
+  wghvar_Bminus.Aminus <- make_weight_var(x_Bminus, sd_Bminus, n_Bminus)
+  wghvar_Bplus.Aplus <- make_weight_var(x_Bplus_Aplus, sd_Bplus_Aplus, n_Bplus_Aplus)
+  wghvar_Bplus.Aminus <- make_weight_var(x_Bplus, sd_Bplus, n_Bplus)
 
   # bias correction for the individual weighted variance of the response ratio
-  corrwghvar_treat.natural <- make_corrweight_var(x_amb_pred, sd_amb_pred, n_amb_pred)
-  corrwghvar_cont.natural <- make_corrweight_var(x_amb, sd_amb, n_amb)
-  corrwghvar_treat.altered <- make_corrweight_var(x_clim_pred, sd_clim_pred, n_clim_pred)
-  corrwghvar_cont.altered <- make_corrweight_var(x_clim, sd_clim, n_clim)
+  corrwghvar_Bminus.Aplus <- make_corrweight_var(x_Bminus_Aplus, sd_Bminus_Aplus, n_Bminus_Aplus)
+  corrwghvar_Bminus.Aminus <- make_corrweight_var(x_Bminus, sd_Bminus, n_Bminus)
+  corrwghvar_Bplus.Aplus <- make_corrweight_var(x_Bplus_Aplus, sd_Bplus_Aplus, n_Bplus_Aplus)
+  corrwghvar_Bplus.Aminus <- make_corrweight_var(x_Bplus, sd_Bplus, n_Bplus)
   
   # ends here
   
@@ -61,22 +61,22 @@ factorial_RR <- function(x_amb = dados$mean_nopred_Controle, sd_amb = dados$erro
   
   # calculation of the log response ratio and its variance
   # response ratio for the treatment under natural condition
-  RR_treat.natural <- make_RR(x_amb_pred, x_amb)
+  RR_Bminus.Aplus <- make_RR(x_Bminus_Aplus, x_Bminus)
   
   # response ratio for the treatment under altered condition
-  RR_treat.altered <- make_RR(x_clim_pred, x_clim)
+  RR_Bplus.Aplus <- make_RR(x_Bplus_Aplus, x_Bplus)
   
   # variance of the response ratio for the treatment under natural condition  
-  varRR_treat.natural <-  wghvar_treat.natural + wghvar_cont.natural
+  varRR_Bminus.Aplus <-  wghvar_Bminus.Aplus + wghvar_Bminus.Aminus
   
   # variance of the response ratio for the treatment under altered condition
-  varRR_treat.altered <- wghvar_treat.altered + wghvar_cont.altered  
+  varRR_Bplus.Aplus <- wghvar_Bplus.Aplus + wghvar_Bplus.Aminus  
   
   # sample size under natural condition
-  size_n_natural <- (n_amb + n_amb_pred)/2
+  size_n_Bminus <- (n_Bminus + n_Bminus_Aplus)/2
   
   # sample size under altered condition
-  size_n_altered <- (n_clim + n_clim_pred)/2
+  size_n_Bplus <- (n_Bplus + n_Bplus_Aplus)/2
   
   
   
@@ -84,16 +84,16 @@ factorial_RR <- function(x_amb = dados$mean_nopred_Controle, sd_amb = dados$erro
   
   # calculation of the bias corrected log response ratio and its variance
   # bias corrected response ratio for the treatment under natural condition
-  corrected_RR_treat.natural <- RR_treat.natural + 1/2*(wghvar_treat.natural - wghvar_cont.natural)
+  corrected_RR_Bminus.Aplus <- RR_Bminus.Aplus + 1/2*(wghvar_Bminus.Aplus - wghvar_Bminus.Aminus)
   
   # bias corrected response ratio for the treatment under altered condition
-  corrected_RR_treat.altered <- RR_treat.altered + 1/2*(wghvar_treat.altered - wghvar_cont.altered)
+  corrected_RR_Bplus.Aplus <- RR_Bplus.Aplus + 1/2*(wghvar_Bplus.Aplus - wghvar_Bplus.Aminus)
   
   # bias corrected variance for the response ratio of the treatment under natural condition
-  corrected_varRR_treat.natural <- varRR_treat.natural + 1/2*(corrwghvar_treat.natural + corrwghvar_cont.natural)
+  corrected_varRR_Bminus.Aplus <- varRR_Bminus.Aplus + 1/2*(corrwghvar_Bminus.Aplus + corrwghvar_Bminus.Aminus)
   
   # bias corrected variance for the response ratio of the treatment under altered condition
-  corrected_varRR_treat.altered <- varRR_treat.altered + 1/2*(corrwghvar_treat.altered + corrwghvar_cont.altered)
+  corrected_varRR_Bplus.Aplus <- varRR_Bplus.Aplus + 1/2*(corrwghvar_Bplus.Aplus + corrwghvar_Bplus.Aminus)
   
   
   
@@ -101,27 +101,27 @@ factorial_RR <- function(x_amb = dados$mean_nopred_Controle, sd_amb = dados$erro
   
   # calculation of the log response ratio for the interaction term between treatment and condition
   # log response ratio for the interaction
-  RR_interaction <- RR_treat.altered - RR_treat.natural
+  RR_interaction <- RR_Bplus.Aplus - RR_Bminus.Aplus
   
   # bias correction of the log response ratio for the interaction
-  corrected_RR_interaction <- corrected_RR_treat.altered - corrected_RR_treat.natural
+  corrected_RR_interaction <- corrected_RR_Bplus.Aplus - corrected_RR_Bminus.Aplus
   
   # variance of the log response ratio for the interaction
-  varRR_interaction <- varRR_treat.natural + varRR_treat.altered
+  varRR_interaction <- varRR_Bminus.Aplus + varRR_Bplus.Aplus
   
   # bias corrected variance of the log response ratio for the interaction
-  corrected_varRR_interaction <-  corrected_varRR_treat.natural +  corrected_varRR_treat.altered
+  corrected_varRR_interaction <-  corrected_varRR_Bminus.Aplus +  corrected_varRR_Bplus.Aplus
   
   # mean sample size of the experiment
-  mean_n <- (n_amb + n_amb_pred + n_clim + n_clim_pred)/4
+  mean_n <- (n_Bminus + n_Bminus_Aplus + n_Bplus + n_Bplus_Aplus)/4
 
   
   
   
   
   # output
-  data.frame(par_id = ID_column, RR_treat.natural, varRR_treat.natural, size_n_natural, RR_treat.altered, varRR_treat.altered,
-             size_n_altered, RR_interaction, varRR_interaction, mean_n, corrected_RR_treat.natural, corrected_varRR_treat.natural,
-             corrected_RR_treat.altered, corrected_varRR_treat.altered, corrected_RR_interaction, corrected_varRR_interaction)
+  data.frame(par_id = ID_column, RR_Bminus.Aplus, varRR_Bminus.Aplus, size_n_Bminus, RR_Bplus.Aplus, varRR_Bplus.Aplus,
+             size_n_Bplus, RR_interaction, varRR_interaction, mean_n, corrected_RR_Bminus.Aplus, corrected_varRR_Bminus.Aplus,
+             corrected_RR_Bplus.Aplus, corrected_varRR_Bplus.Aplus, corrected_RR_interaction, corrected_varRR_interaction)
   
 }
