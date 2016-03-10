@@ -1,76 +1,79 @@
+# a are the rows, b are the columns
+# similarly, 0 is absence, 1 is presence
+
 # function to calculate effect size and sampling variance for factorial meta-analysis
 # this function is based on the paper by Gurevitch et al, 2000, Am Nat, The interaction between competition and predation: a meta-analysis of field experiments
 # all the formulae are in the Appendix of the paper
 
 
 # this function is used to calculate the correction factor for small sample bias from
-# simple Aplus and control differences
-small_bias <- function(n_Aplus, n_control) {
-  1 - (3/((4*(n_control + n_Aplus - 2)) - 1))
+# simple treatment and control differences
+small_bias <- function(n_treatment, n_control) {
+  1 - (3/((4*(n_control + n_treatment - 2)) - 1))
 }
 
 
 # this function is used to calculate the correction factor for small sample bias from
-# the interaction of the four Apluss
-small_bias_interaction <- function(n_Aplus.Bminus, n_control.Bminus, n_Aplus.Bplus, n_control.Bplus) {
-  1 - (3/((4*(n_Aplus.Bminus + n_control.Bminus + n_Aplus.Bplus + n_control.Bplus - 4)) - 1))
+# the interaction of the four treatments
+small_bias_interaction <- function(n_a0b1, n_a0b0, n_a1b1, n_a1b0) {
+  1 - (3/((4*(n_a0b1 + n_a0b0 + n_a1b1 + n_a1b0 - 4)) - 1))
 }
 
 
-# this function calculates the weighted variance for each Aplus
+# this function calculates the weighted variance for each treatment
 wgh_variance <- function(sample_size, std_deviation) {
   (sample_size - 1) * (std_deviation^2)
 }
 
 
-factorial_hedge <- function(x_Bminus = mean_Bminus_Aminus, sd_Bminus = error_Bminus_Aminus, n_Bminus = n_Bminus_Aminus, 
-                    x_Bminus_Aplus = mean_Bminus_Aplus, sd_Bminus_Aplus = error_Bminus_Aplus, n_Bminus_Aplus = n_Bminus_Aplus,
-                    x_Bplus = mean_Bplus_Aminus, sd_Bplus = error_Bplus_Aminus, n_Bplus = n_Bplus_Aminus, 
-                    x_Bplus_Aplus = mean_Bplus_Aplus, sd_Bplus_Aplus = error_Bplus_Aplus, n_Bplus_Aplus = n_Bplus_Aplus, 
-                    ID_column = par_id) { 
+factorial_hedge <- function(x_a0 = mean_a0b0, sd_a0 = error_a0b0, n_a0 = n_a0b0, 
+                            x_a0b1 = mean_a0b1, sd_a0b1 = error_a0b1, n_a0b1 = n_a0b1,
+                            x_a1 = mean_a1b0, sd_a1 = error_a1b0, n_a1 = n_a1b0, 
+                            x_a1b1 = mean_a1b1, sd_a1b1 = error_a1b1, n_a1b1 = n_a1b1, 
+                            ID_column = par_id) { 
   
-
+  
   
   # pooled sample variance of the hedge's d effect size metric for all factors
-  sample_variance <- sqrt((wgh_variance(n_Bminus, sd_Bminus) + wgh_variance(n_Bminus_Aplus, sd_Bminus_Aplus) +
-      wgh_variance(n_Bplus, sd_Bplus) + wgh_variance(n_Bplus_Aplus, sd_Bplus_Aplus))/
-    (n_Bminus + n_Bminus_Aplus + n_Bplus + n_Bplus_Aplus - 4))
+  sample_variance <- sqrt((wgh_variance(n_a0, sd_a0) + wgh_variance(n_a0_treatment, sd_a0_treatment) +
+                             wgh_variance(n_a1, sd_a1) + wgh_variance(n_a1b1, sd_a1b1))/
+                            (n_a0 + n_a0_treatment + n_a1 + n_a1b1 - 4))
   
   
   
   # calculations of the hedge's d effect size
-  # hedge's d for the Aplus under Bminus conditions
-  d_Aplus.Bminus <- ((x_Bminus_Aplus - x_Bminus)/sample_variance) * small_bias(n_Bminus, n_Bminus_Aplus)
+  # hedge's d for the treatment under a0 conditions
+  d_a0b1 <- ((x_a0b1 - x_a0)/sample_variance) * small_bias(n_a0, n_a0b1)
   
-  # hedge's d for the Aplus under Bplus conditions
-  d_Aplus.Bplus <- ((x_Bplus_Aplus - x_Bplus)/sample_variance) * small_bias(n_Bplus, n_Bplus_Aplus)
+  # hedge's d for the treatment under a1 conditions
+  d_a1b1 <- ((x_a1b1 - x_a1)/sample_variance) * small_bias(n_a1, n_a1b1)
   
-  # this object is the sampling variance of adding a predator under the ambient condtion
-  d_var_Aplus.Bminus <- (1/n_Bminus) + (1/n_Bminus_Aplus) + ((d_Aplus.Bminus^2)/(2*(n_Bminus_Aplus + n_Bminus)))
+  # this object is the sampling variance of adding a b1 under the a0 condition
+  d_var_a0b1 <- (1/n_a0) + (1/n_a0b1) + ((d_a0b1^2)/(2*(n_a0b1 + n_a0)))
   
-  # this object is the sampling variance of adding a predator under the climate change condition
-  d_var_Aplus.Bplus <- (1/n_Bplus) + (1/n_Bplus_Aplus) + ((d_Aplus.Bplus^2)/(2*(n_Bplus_Aplus + n_Bplus)))
+  # this object is the sampling variance of adding a b1 under the a1 condition
+  d_var_a1b1 <- (1/n_a1) + (1/n_a1b1) + ((d_a1b1^2)/(2*(n_a1b1 + n_a1)))
   
-  # sample size Aplus, Bminus
-  size_n_Aplus.Bminus <- mean(c(n_Bminus, n_Bminus_Aplus))
+  # sample size treatment, a0
+  size_n_a0b1 <- mean(c(n_a0, n_a0b1))
   
-  # sample size Aplus, Bplus
-  size_n_Aplus.Bplus <- mean(c(n_Bplus, n_Bplus_Aplus))
+  # sample size treatment, a1
+  size_n_a1b1 <- mean(c(n_a1, n_a1b1))
   
   
   
   # calculation for the overall effect of each factor in the experiment
-  # effect size of the pure effect of the Aplus
-  d_Aplus <- (((x_Bminus_Aplus + x_Bplus_Aplus) - (x_Bminus + x_Bplus))/(2*sample_variance)) * small_bias_interaction(n_Bminus, n_Bminus_Aplus, n_Bplus, n_Bplus_Aplus)
+  # effect size of the pure effect of the treatment
+  d_treatment <- (((x_a0b1 + x_a1b1) - (x_a0 + x_a1))/(2*sample_variance)) * small_bias_interaction(n_a0, n_a0b1, n_a1, n_a1b1)
   
-  # effect size of the pure effect of the Bplus condition
-  d_Bplus <- (((x_Bplus_Aplus + x_Bplus) - (x_Bminus_Aplus + x_Bminus))/(2*sample_variance)) * small_bias_interaction(n_Bminus, n_Bminus_Aplus, n_Bplus, n_Bplus_Aplus)
+  # effect size of the pure effect of the a1 condition
+  d_a1 <- (((x_a1b1 + x_a1) - (x_a0b1 + x_a0))/(2*sample_variance)) * small_bias_interaction(n_a0, n_a0b1, n_a1, n_a1b1)
   
-  # variance of the pure effect of the Aplus
-  d_var_Aplus <- ((1/n_Bplus) + (1/n_Bplus_Aplus) + (1/n_Bminus) + (1/n_Bminus_Aplus) + ((d_Aplus^2)/(2*(n_Bplus + n_Bplus_Aplus + n_Bminus + n_Bminus_Aplus))))*(1/4)
+  # variance of the pure effect of the treatment
+  d_var_treatment <- ((1/n_a1) + (1/n_a1b1) + (1/n_a0) + (1/n_a0b1) + ((d_treatment^2)/(2*(n_a1 + n_a1b1 + n_a0 + n_a0b1))))*(1/4)
   
-  # variance of the pure effect of the Bplus condition
-  d_var_Bplus <- ((1/n_Bplus) + (1/n_Bplus_Aplus) + (1/n_Bminus) + (1/n_Bminus_Aplus) + ((d_Bplus^2)/(2*(n_Bplus + n_Bplus_Aplus + n_Bminus + n_Bminus_Aplus))))*(1/4)
+  # variance of the pure effect of the a1 condition
+  d_var_a1 <- ((1/n_a1) + (1/n_a1b1) + (1/n_a0) + (1/n_a0b1) + ((d_a1^2)/(2*(n_a1 + n_a1b1 + n_a0 + n_a0b1))))*(1/4)
   
   
   
@@ -79,14 +82,14 @@ factorial_hedge <- function(x_Bminus = mean_Bminus_Aminus, sd_Bminus = error_Bmi
   
   
   # calculation for the effect size of the interaction according to hedge's d
-  # this object is the result of adding a predator under climate change
-  d_interaction <- ((d_Aplus.Bplus - d_Aplus.Bminus)/sample_variance) * small_bias_interaction(n_Bminus, n_Bminus_Aplus, n_Bplus, n_Bplus_Aplus)
+  # this object is the result of adding a b1 under a1
+  d_interaction <- ((d_a1b1 - d_a0b1)/sample_variance) * small_bias_interaction(n_a0, n_a0b1, n_a1, n_a1b1)
   
   # this object is the sampling variance of the interaction
-  d_var_interaction<- (1/n_Bplus) + (1/n_Bplus_Aplus) + (1/n_Bminus) + (1/n_Bminus_Aplus) + ((d_interaction^2)/(2*(n_Bplus + n_Bplus_Aplus + n_Bminus + n_Bminus_Aplus)))
+  d_var_interaction<- (1/n_a1) + (1/n_a1b1) + (1/n_a0) + (1/n_a0b1) + ((d_interaction^2)/(2*(n_a1 + n_a1b1 + n_a0 + n_a0b1)))
   
   # sample size for interaction
-  sample_size <- mean(c(n_Bminus, n_Bminus_Aplus, n_Bplus, n_Bplus_Aplus))
+  sample_size <- mean(c(n_a0, n_a0b1, n_a1, n_a1b1))
   
   
   
@@ -94,10 +97,10 @@ factorial_hedge <- function(x_Bminus = mean_Bminus_Aminus, sd_Bminus = error_Bmi
   
   # output
   data.frame(par_id = ID_column, sample_variance, sample_size, 
-             d_Aplus.Bminus, d_var_Aplus.Bminus, size_n_Aplus.Bminus,
-             d_Aplus.Bplus, d_var_Aplus.Bplus, size_n_Aplus.Bplus, 
-             d_Aplus, d_var_Aplus, 
-             d_Bplus, d_var_Bplus, 
+             d_a0b1, d_var_a0b1, size_n_a0b1,
+             d_a1b1, d_var_a1b1, size_n_a1b1, 
+             d_treatment, d_var_treatment, 
+             d_a1, d_var_a1, 
              d_interaction, d_var_interaction)
-
+  
 }
